@@ -134,11 +134,11 @@ acc= (y_test_tensor == y_pred).float().mean()
 print(f'test\ntest acc: {acc: .3f}')
 
 # visualize prediction
-last_10= X_test_tensor[10:].numpy()
+last_10= X_test_tensor[-10:].numpy()
 reshaped_10 = last_10.reshape(-1, 28, 28) # reshape to 28*28
 
-y_true= y_test_tensor[10:].numpy()
-y_pred= y_pred[10:].numpy()
+y_true= y_test_tensor[-10:].numpy()
+y_pred= y_pred[-10:].numpy()
 labels= {
     0: 'T-shirt/top',
     1: 'Trouser',
@@ -170,7 +170,7 @@ for i, ax in enumerate(axs.flatten()):
     
     ax.axis('off')
 
-plt.suptitle('Categorizing Fashion Items with Neural Network', fontsize= 30, fontweight= 'bold')
+plt.suptitle('Categorizing Fashion Items with Neural Network', 
+             fontsize= 30, fontweight= 'bold')
+plt.subplots_adjust(hspace= 0.075)
 plt.show()
-
-print(df_test.shape)
