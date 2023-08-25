@@ -9,6 +9,10 @@ from tensorflow.keras import layers
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.utils import image_dataset_from_directory, img_to_array, load_img
 
+
+# ! DO NOT RUN
+# ! NOT ENOUGH MEMORY
+
 IMAGES_DIR = Path("dataset/oxford-iiit-pet/images")
 LABELS_DIR = Path("dataset/oxford-iiit-pet/annotations/trimaps")
 
@@ -120,6 +124,7 @@ def get_model(img_size, num_classes):
         filters=256, kernel_size=3, strides=1, activation="relu", padding="same"
     )(x)
 
+    # upsample (inverse transoform the conv2d)
     x = layers.Conv2DTranspose(
         filters=256, kernel_size=3, strides=1, activation="relu", padding="same"
     )(x)
@@ -152,27 +157,31 @@ def get_model(img_size, num_classes):
 
 
 model = get_model(img_size=img_size, num_classes=3)
-print(model.summary())
+# print(model.summary())
 
+# compile and fit
+model.compile(optimizer="rmsprop", loss="sparse_categorical_crossentropy")
+callbacks = [
+    keras.callbacks.ModelCheckpoint(
+        filepath="output/oxford_segmentation.keras", save_best_only=True
+    )
+]
+history = model.fit(
+    train_imgs,
+    train_targets,
+    epochs=1,
+    callbacks=callbacks,
+    batch_size=1,
+    validation_data=(val_imgs, val_targets),
+)
 
-inputs = keras.Input(shape=img_size + (3,))
-x = preprocessing(inputs)
-x = layers.Conv2D(64, 3, strides=2, activation="relu", padding="same")(x)
-x = layers.Conv2D(64, 3, activation="relu", padding="same")(x)
-x = layers.Conv2D(128, 3, strides=2, activation="relu", padding="same")(x)
-x = layers.Conv2D(128, 3, activation="relu", padding="same")(x)
-x = layers.Conv2D(256, 3, strides=2, padding="same", activation="relu")(x)
-x = layers.Conv2D(256, 3, activation="relu", padding="same")(x)
-x = layers.Conv2DTranspose(256, 3, activation="relu", padding="same")(x)
-x = layers.Conv2DTranspose(256, 3, activation="relu", padding="same", strides=2)(x)
-x = layers.Conv2DTranspose(128, 3, activation="relu", padding="same")(x)
-x = layers.Conv2DTranspose(128, 3, activation="relu", padding="same", strides=2)(x)
-x = layers.Conv2DTranspose(64, 3, activation="relu", padding="same")(x)
-x = layers.Conv2DTranspose(64, 3, activation="relu", padding="same", strides=2)(x)
-outputs = layers.Conv2D(
-    filters=num_classes,
-    kernel_size=3,
-    strides=1,
-    activation="softmax",
-    padding="same",
-)(x)
+# display train result
+epochs = range(1, len(history.history["loss"]) + 1)
+loss = history.history["loss"]
+val_loss = history.history["val_loss"]
+plt.figure()
+plt.plot(epochs, loss, "bo", label="Training loss")
+plt.plot(epochs, val_loss, "b", label="Validation loss")
+plt.title("Training and validation loss")
+plt.legend()
+plt.show()
