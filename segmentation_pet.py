@@ -1,11 +1,13 @@
 import os
 import random
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
-from pathlib import Path
-from tensorflow.keras.utils import load_img, img_to_array, image_dataset_from_directory
+from tensorflow import keras
+from tensorflow.keras import layers
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-
+from tensorflow.keras.utils import image_dataset_from_directory, img_to_array, load_img
 
 IMAGES_DIR = Path("dataset/oxford-iiit-pet/images")
 LABELS_DIR = Path("dataset/oxford-iiit-pet/annotations/trimaps")
@@ -79,3 +81,98 @@ for i in range(num_imgs):
 # print(input_imgs.shape)
 # print(targets.shape)
 
+# train val split
+num_val_samples = 1000
+train_imgs = input_imgs[:-num_val_samples]
+train_targets = targets[:-num_val_samples]
+val_imgs = input_imgs[-num_val_samples:]
+val_targets = targets[-num_val_samples:]
+
+
+def get_model(img_size, num_classes):
+    preprocessing = keras.Sequential(
+        [
+            layers.Rescaling(scale=1.0 / 255),  # range 0-1
+        ]
+    )
+
+    inputs = keras.Input(shape=img_size + (3,))
+    x = preprocessing(inputs)
+
+    # compression
+    # downsaple by adding strides every other layer
+    x = layers.Conv2D(
+        filters=64, kernel_size=3, strides=2, activation="relu", padding="same"
+    )(x)
+    x = layers.Conv2D(
+        filters=64, kernel_size=3, strides=1, activation="relu", padding="same"
+    )(x)
+    x = layers.Conv2D(
+        filters=128, kernel_size=3, strides=2, activation="relu", padding="same"
+    )(x)
+    x = layers.Conv2D(
+        filters=128, kernel_size=3, strides=1, activation="relu", padding="same"
+    )(x)
+    x = layers.Conv2D(
+        filters=256, kernel_size=3, strides=2, activation="relu", padding="same"
+    )(x)
+    x = layers.Conv2D(
+        filters=256, kernel_size=3, strides=1, activation="relu", padding="same"
+    )(x)
+
+    x = layers.Conv2DTranspose(
+        filters=256, kernel_size=3, strides=1, activation="relu", padding="same"
+    )(x)
+    x = layers.Conv2DTranspose(
+        filters=256, kernel_size=3, strides=2, activation="relu", padding="same"
+    )(x)
+    x = layers.Conv2DTranspose(
+        filters=128, kernel_size=3, strides=1, activation="relu", padding="same"
+    )(x)
+    x = layers.Conv2DTranspose(
+        filters=128, kernel_size=3, strides=2, activation="relu", padding="same"
+    )(x)
+    x = layers.Conv2DTranspose(
+        filters=64, kernel_size=3, strides=1, activation="relu", padding="same"
+    )(x)
+    x = layers.Conv2DTranspose(
+        filters=64, kernel_size=3, strides=2, activation="relu", padding="same"
+    )(x)
+
+    outputs = layers.Conv2D(
+        filters=num_classes,
+        kernel_size=3,
+        strides=1,
+        activation="softmax",
+        padding="same",
+    )(x)
+
+    model = keras.Model(inputs, outputs)
+    return model
+
+
+model = get_model(img_size=img_size, num_classes=3)
+print(model.summary())
+
+
+inputs = keras.Input(shape=img_size + (3,))
+x = preprocessing(inputs)
+x = layers.Conv2D(64, 3, strides=2, activation="relu", padding="same")(x)
+x = layers.Conv2D(64, 3, activation="relu", padding="same")(x)
+x = layers.Conv2D(128, 3, strides=2, activation="relu", padding="same")(x)
+x = layers.Conv2D(128, 3, activation="relu", padding="same")(x)
+x = layers.Conv2D(256, 3, strides=2, padding="same", activation="relu")(x)
+x = layers.Conv2D(256, 3, activation="relu", padding="same")(x)
+x = layers.Conv2DTranspose(256, 3, activation="relu", padding="same")(x)
+x = layers.Conv2DTranspose(256, 3, activation="relu", padding="same", strides=2)(x)
+x = layers.Conv2DTranspose(128, 3, activation="relu", padding="same")(x)
+x = layers.Conv2DTranspose(128, 3, activation="relu", padding="same", strides=2)(x)
+x = layers.Conv2DTranspose(64, 3, activation="relu", padding="same")(x)
+x = layers.Conv2DTranspose(64, 3, activation="relu", padding="same", strides=2)(x)
+outputs = layers.Conv2D(
+    filters=num_classes,
+    kernel_size=3,
+    strides=1,
+    activation="softmax",
+    padding="same",
+)(x)
