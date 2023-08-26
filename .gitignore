@@ -1,2 +1,4 @@
 dataset/
+__pycache__/
+sandbox.py
 __pycache__/config.cpython-310.pyc
