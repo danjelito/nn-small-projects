@@ -171,7 +171,7 @@ history = model.fit(
     train_targets,
     epochs=1,
     callbacks=callbacks,
-    batch_size=1,
+    batch_size=64,
     validation_data=(val_imgs, val_targets),
 )
 
