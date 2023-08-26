@@ -106,42 +106,42 @@ def get_model(img_size, num_classes):
     # compression
     # downsaple by adding strides every other layer
     x = layers.Conv2D(
+        filters=16, kernel_size=3, strides=2, activation="relu", padding="same"
+    )(x)
+    x = layers.Conv2D(
+        filters=16, kernel_size=3, strides=1, activation="relu", padding="same"
+    )(x)
+    x = layers.Conv2D(
+        filters=32, kernel_size=3, strides=2, activation="relu", padding="same"
+    )(x)
+    x = layers.Conv2D(
+        filters=32, kernel_size=3, strides=1, activation="relu", padding="same"
+    )(x)
+    x = layers.Conv2D(
         filters=64, kernel_size=3, strides=2, activation="relu", padding="same"
     )(x)
     x = layers.Conv2D(
         filters=64, kernel_size=3, strides=1, activation="relu", padding="same"
-    )(x)
-    x = layers.Conv2D(
-        filters=128, kernel_size=3, strides=2, activation="relu", padding="same"
-    )(x)
-    x = layers.Conv2D(
-        filters=128, kernel_size=3, strides=1, activation="relu", padding="same"
-    )(x)
-    x = layers.Conv2D(
-        filters=256, kernel_size=3, strides=2, activation="relu", padding="same"
-    )(x)
-    x = layers.Conv2D(
-        filters=256, kernel_size=3, strides=1, activation="relu", padding="same"
     )(x)
 
     # upsample (inverse transoform the conv2d)
     x = layers.Conv2DTranspose(
-        filters=256, kernel_size=3, strides=1, activation="relu", padding="same"
-    )(x)
-    x = layers.Conv2DTranspose(
-        filters=256, kernel_size=3, strides=2, activation="relu", padding="same"
-    )(x)
-    x = layers.Conv2DTranspose(
-        filters=128, kernel_size=3, strides=1, activation="relu", padding="same"
-    )(x)
-    x = layers.Conv2DTranspose(
-        filters=128, kernel_size=3, strides=2, activation="relu", padding="same"
-    )(x)
-    x = layers.Conv2DTranspose(
         filters=64, kernel_size=3, strides=1, activation="relu", padding="same"
     )(x)
     x = layers.Conv2DTranspose(
         filters=64, kernel_size=3, strides=2, activation="relu", padding="same"
+    )(x)
+    x = layers.Conv2DTranspose(
+        filters=32, kernel_size=3, strides=1, activation="relu", padding="same"
+    )(x)
+    x = layers.Conv2DTranspose(
+        filters=32, kernel_size=3, strides=2, activation="relu", padding="same"
+    )(x)
+    x = layers.Conv2DTranspose(
+        filters=16, kernel_size=3, strides=1, activation="relu", padding="same"
+    )(x)
+    x = layers.Conv2DTranspose(
+        filters=16, kernel_size=3, strides=2, activation="relu", padding="same"
     )(x)
 
     outputs = layers.Conv2D(
